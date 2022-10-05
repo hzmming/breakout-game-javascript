@@ -1,3 +1,10 @@
+ul.category li {
+  cursor: pointer;
+}
+ul.category li.selected {
+  color: rgb(18, 213, 234);
+}
+
 .board {
   background: #eee;
   display: block;
