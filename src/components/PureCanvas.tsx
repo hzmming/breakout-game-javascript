@@ -5,6 +5,7 @@ function PureCanvas() {
   const requestIdRef = useRef<number>();
 
   const size = { width: 480, height: 320 };
+  const ratio = window.devicePixelRatio;
   // ball
   const ballRadius = 10;
   let x = size.width / 2;
@@ -41,10 +42,10 @@ function PureCanvas() {
     function mouseMoveHandler(e: MouseEvent) {
       const canvas = el.current!;
       const relativeX = e.clientX - canvas.offsetLeft;
-      if (relativeX > 0 && relativeX < canvas.width) {
+      if (relativeX > 0 && relativeX < size.width) {
         paddleX = Math.min(
           Math.max(0, relativeX - paddleWidth / 2),
-          canvas.width - paddleWidth
+          size.width - paddleWidth
         );
       }
     }
@@ -80,7 +81,7 @@ function PureCanvas() {
     const canvas = el.current!;
     const ctx = canvas.getContext('2d')!;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, size.width, size.height);
 
     drawBricks();
     drawBall();
@@ -97,12 +98,12 @@ function PureCanvas() {
     }
 
     // wall collision detection
-    if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+    if (x + dx > size.width - ballRadius || x + dx < ballRadius) {
       dx = -dx;
     }
     if (y + dy < ballRadius) {
       dy = -dy;
-    } else if (y + dy > canvas.height - ballRadius) {
+    } else if (y + dy > size.height - ballRadius) {
       if (x > paddleX && x < paddleX + paddleWidth) {
         dy = -dy;
       } else {
@@ -114,18 +115,18 @@ function PureCanvas() {
           return;
         } else {
           // reset
-          x = canvas.width / 2;
-          y = canvas.height - 30;
+          x = size.width / 2;
+          y = size.height - 30;
           dx = 2;
           dy = -2;
-          paddleX = canvas.width / 2 - paddleWidth / 2;
+          paddleX = size.width / 2 - paddleWidth / 2;
         }
       }
     }
 
     // control paddle
     if (rightPressed) {
-      paddleX = Math.min(paddleX + 7, canvas.width - paddleWidth);
+      paddleX = Math.min(paddleX + 7, size.width - paddleWidth);
     } else if (leftPressed) {
       paddleX = Math.max(paddleX - 7, 0);
     }
@@ -170,7 +171,7 @@ function PureCanvas() {
     const ctx = canvas.getContext('2d')!;
     ctx.font = '16px Arial';
     ctx.fillStyle = '#0095DD';
-    ctx.fillText(`Lives: ${lives}`, canvas.width - 65, 20);
+    ctx.fillText(`Lives: ${lives}`, size.width - 65, 20);
   }
 
   function drawBall() {
@@ -187,7 +188,7 @@ function PureCanvas() {
     const canvas = el.current!;
     const ctx = canvas.getContext('2d')!;
     ctx.beginPath();
-    ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+    ctx.rect(paddleX, size.height - paddleHeight, paddleWidth, paddleHeight);
     ctx.fillStyle = '#0095DD';
     ctx.fill();
     ctx.closePath();
@@ -222,13 +223,25 @@ function PureCanvas() {
   }
 
   useEffect(() => {
+    const canvas = el.current!;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(ratio, ratio);
+
     requestIdRef.current = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(requestIdRef.current!);
     };
   }, []);
 
-  return <canvas ref={el} className="board" {...size}></canvas>;
+  return (
+    <canvas
+      ref={el}
+      className="board"
+      style={{ width: `${size.width}px`, height: `${size.height}px` }}
+      width={size.width * ratio}
+      height={size.height * ratio}
+    ></canvas>
+  );
 }
 
 export default PureCanvas;
